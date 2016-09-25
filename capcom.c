@@ -5,7 +5,7 @@
 
 static long capcom_ioctl(struct file* file, unsigned int request, unsigned long arg) {
 	void (*user_function)(void) = (void*) arg;
-	if (request == 0xAA012044) {
+	if (request == 0xAA012044 || request == 0xAA013044) {
 		user_function();
 		return 0;
 	}
