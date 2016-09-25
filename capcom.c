@@ -2,11 +2,18 @@
 #include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/miscdevice.h>
+#include <asm/paravirt.h>
 
 static long capcom_ioctl(struct file* file, unsigned int request, unsigned long arg) {
 	void (*user_function)(void) = (void*) arg;
 	if (request == 0xAA012044 || request == 0xAA013044) {
+		long old_cr4 = __read_cr4();
+		long new_cr4 = old_cr4 & ~(X86_CR4_SMEP);
+		__write_cr4(new_cr4);
 		user_function();
+		__write_cr4(old_cr4);
+		pr_info("CR4 was temporarily changed from %lx to %lx\n",
+				old_cr4, new_cr4);
 		return 0;
 	}
 	return -EINVAL;
