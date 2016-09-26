@@ -1,3 +1,9 @@
+/*
+ * DISCLAIMER: This is a joke.  Do not use this on a system you care about.
+ */
+
+#warning This module is a joke.  Do not use this on a live system.
+
 #define pr_fmt(fmt) "capcom: " fmt
 #include <linux/fs.h>
 #include <linux/module.h>
@@ -9,6 +15,11 @@ static long capcom_ioctl(struct file* file, unsigned int request, unsigned long 
 	if (request == 0xAA012044 || request == 0xAA013044) {
 		long old_cr4 = __read_cr4();
 		long new_cr4 = old_cr4 & ~(X86_CR4_SMEP);
+		/* It would be more correct to disable preemption so that other
+		 * parts of the kernel do not accidentally run with the
+		 * modified cr4.  However, based on the Twitter conversation, I
+		 * am of the understanding that the original Windows version
+		 * does not protect against that either. */
 		__write_cr4(new_cr4);
 		user_function();
 		__write_cr4(old_cr4);
@@ -31,6 +42,7 @@ static struct miscdevice capcom_misc = {
 };
 
 static int capcom_init(void) {
+	pr_err("This module is a joke.  This Linux system should now be treated as if it has been compromised.\n");
 	misc_register(&capcom_misc);
 	return 0;
 }
