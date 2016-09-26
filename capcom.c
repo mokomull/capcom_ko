@@ -10,8 +10,13 @@
 #include <linux/miscdevice.h>
 #include <asm/paravirt.h>
 
-static long capcom_ioctl(struct file* file, unsigned int request, unsigned long arg) {
-	void (*user_function)(void) = (void*) arg;
+static long capcom_ioctl(
+		struct file *file,
+		unsigned int request,
+		unsigned long arg)
+{
+	void (*user_function)(void) = (void *) arg;
+
 	if (request == 0xAA012044 || request == 0xAA013044) {
 		long old_cr4 = __read_cr4();
 		long new_cr4 = old_cr4 & ~(X86_CR4_SMEP);
@@ -19,7 +24,8 @@ static long capcom_ioctl(struct file* file, unsigned int request, unsigned long 
 		 * parts of the kernel do not accidentally run with the
 		 * modified cr4.  However, based on the Twitter conversation, I
 		 * am of the understanding that the original Windows version
-		 * does not protect against that either. */
+		 * does not protect against that either.
+		 */
 		__write_cr4(new_cr4);
 		user_function();
 		__write_cr4(old_cr4);
@@ -30,7 +36,7 @@ static long capcom_ioctl(struct file* file, unsigned int request, unsigned long 
 	return -EINVAL;
 }
 
-static struct file_operations capcom_fops = {
+static const struct file_operations capcom_fops = {
 	.unlocked_ioctl = capcom_ioctl,
 };
 
@@ -41,13 +47,15 @@ static struct miscdevice capcom_misc = {
 	.fops = &capcom_fops,
 };
 
-static int capcom_init(void) {
+static int capcom_init(void)
+{
 	pr_err("This module is a joke.  This Linux system should now be treated as if it has been compromised.\n");
 	misc_register(&capcom_misc);
 	return 0;
 }
 
-static void capcom_exit(void) {
+static void capcom_exit(void)
+{
 	misc_deregister(&capcom_misc);
 }
 
